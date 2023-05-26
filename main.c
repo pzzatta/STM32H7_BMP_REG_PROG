@@ -51,103 +51,6 @@
 #include "stm32h7xx.h"
 #include "main.h"
 
-/*Enable clock access to GPIOB, GPIOH and GPIOI using  RCC_AHB4ENR register*/
-#define RCC_GPIOAEN            (    1U << 0    )    /* Enable clock access to GPIOA in RCC_AHB4ENR*/
-#define RCC_GPIOBEN            (    1U << 1    )    /* Enable clock access to GPIOB in RCC_AHB4ENR*/
-#define RCC_GPIOCEN            (    1U << 2    )    /* Enable clock access to GPIOC in RCC_AHB4ENR*/
-#define RCC_GPIOHEN            (    1U << 7    )    /* Enable clock access to GPIOB in RCC_AHB4ENR*/
-#define RCC_GPIOIEN            (    1U << 8    )    /* Enable clock access to GPIOB in RCC_AHB4ENR*/
-
-/* Set PA8 and PC9 in alternate mode using GPIOx_MODER register
- * 10: Alternate function mode */
-#define PA8_MODER1             (    1U << 17   )     /* Set bit    */
-#define PA8_MODER0             (    1U << 16   )     /* Clear bit  */
-
-#define PC9_MODER1             (    1U << 19   )     /* Set bit    */
-#define PC9_MODER0             (    1U << 18   )     /* Clear bit  */
-
-/* Set alternate function of type system for PA8 and PC9 using GPIOx_AFRH register
- * 0000: AF0- System */
-#define PA8_AFR8_3            (    1U << 3   )      /* Clear bit  */
-#define PA8_AFR8_2            (    1U << 2   )      /* Clear bit  */
-#define PA8_AFR8_1            (    1U << 2   )      /* Clear bit  */
-#define PA8_AFR8_0            (    1U << 0   )      /* Clear bit  */
-
-#define PC9_AFR9_3            (    1U << 7   )      /* Clear bit  */
-#define PC9_AFR9_2            (    1U << 6   )      /* Clear bit  */
-#define PC9_AFR9_1            (    1U << 5   )      /* Clear bit  */
-#define PC9_AFR9_0            (    1U << 4   )      /* Clear bit  */
-
-// PA8 and PC9 output speed
-#define PC9_OSPEEDR_1          (    1U << 19  )    //PC9
-#define PC9_OSPEEDR_0          (    1U << 18  )
-#define PA8_OSPEEDR_1          (    1U << 17  )    // PA8
-#define PA8_OSPEEDR_0          (    1U << 16  )
-
-// PA8 and PC9 output type
-#define PC9_OTYPER             (    1U << 9  )
-#define PA8_OTYPER             (    1U << 8  )
-
-/* Select PLL1 as MCO1 output on PA8*/
-#define MCO1_2                 (    1U << 24  )      /* must set 011 */
-#define MCO1_1                 (    1U << 23  )
-#define MCO1_0                 (    1U << 22  )
-
-/* Select system clock as MCO2 output on PC9 */
-#define MCO2_2                 (    1U << 31  )      /* must set 000 */
-#define MCO2_1                 (    1U << 30  )
-#define MCO2_0                 (    1U << 29  )
-
-/* MCO1 prescaler */
-#define MCO1_PRE_3             (    1U << 21  )     /* 0010: division by 2 */
-#define MCO1_PRE_2             (    1U << 20  )     /* 0011: division by 3 */
-#define MCO1_PRE_1             (    1U << 19  )     /* 0100: division by 4 */
-#define MCO1_PRE_0             (    1U << 18  )     /* 1111: division by 15*/
-
-/* MCO2 prescaler */
-#define MCO2_PRE_3             (    1U << 28  )     /* 0010: division by 2 */
-#define MCO2_PRE_2             (    1U << 27  )     /* 0011: division by 3 */
-#define MCO2_PRE_1             (    1U << 26  )     /* 0100: division by 4 */
-#define MCO2_PRE_0             (    1U << 25  )     /* 1111: division by 15*/
-
-
-
-/* Set PB6, PB7, PH4 and PI8 in output mode using GPIOx_MODER register
- * 01: General purpose output mode */
-#define PB6_MODER1             (    1U << 13   )     /* Clear bit   */
-#define PB6_MODER0             (    1U << 12   )     /* Set bit     */
-#define PB7_MODER1             (    1U << 15   )     /* Clear bit   */
-#define PB7_MODER0             (    1U << 14   )     /* Set bit     */
-#define PH4_MODER1             (    1U <<  9   )     /* Clear bit   */
-#define PH4_MODER0             (    1U <<  8   )     /* Set bit     */
-
-#define PI8_MODER1             (    1U <<  17  )     /* Clear bit   */
-#define PI8_MODER0             (    1U <<  16  )     /* Set bit     */
-
-
-//#define PWR_D3CR_VOS_1         (    1U << 15   )
-//#define PWR_D3CR_VOS_0         (    1U << 14   )
-//#define RCC_CFGR_SW_HSE      (    0b010 << 0 )
-//#define RCC_CFGR_SWS_HSE           (    0b010 << 3 )
-#define RCC_PLLCKSELR_DIVM1_CLEAR  (0b111111UL << 4U)
-#define RCC_PLLCKSELR_DIVM    (    0b000101 << 4 ) // DIVM1[5:0], Page 397
-#define RCC_PLL1DIVR_DIVN1     (     0xBFU << 0     )
-#define RCC_PLL1DIVR_DIVP1     (       1U << 9     )
-#define RCC_PLL1DIVR_DIVQ1     (       1U << 16    )
-#define RCC_PLL1DIVR_DIVR1     (       1U << 24    )
-#define RCC_D1CFGR_HPRE_8      (  0x08  << 0      )
-#define RCC_D1CFGR_D1CPRE_RESET    (   0b1111 << 8    )
-
-/************************ Function prototypes ***************************/
-static void MCO_Pins_Config(void)    ;
-static void MCO_Select_Set(void)     ;
-static void SystemClock_Config(void) ;
-
-/************************ Global Variables ***************************/
-extern void SystemInit(void);
-extern uint32_t SystemD1Clock;
-extern uint32_t SystemD2Clock;
-extern void SystemCoreClockUpdate(void);
 
 int main(void)
 {
@@ -182,38 +85,38 @@ static void MCO_Pins_Config(void)
 	*******************************/
 
 	/* Step 1:  Enable clock access to GPIOB and GPIOC */
-	RCC->AHB4ENR |= RCC_GPIOAEN | RCC_GPIOCEN ;
+	RCC->AHB4ENR |= RCC_AHB4ENR_GPIOAEN | RCC_AHB4ENR_GPIOCEN ;
 
 	/* Step 2: Set GPIOA Pin PA8 and GPIOC Pin PC9 in alternate mode, MODER[1:0] = 1 0 */
-	GPIOA->MODER |=   PA8_MODER1 ;          /* Set bit    */
-	GPIOA->MODER &= ~ PA8_MODER0 ;          /* Clear bit  */
+	GPIOA->MODER |=   GPIO_MODER_MODE8_1 ;         /* Set bit    */
+	GPIOA->MODER &= ~ GPIO_MODER_MODE8_0 ;         /* Clear bit  */
 
-	GPIOC->MODER |=   PC9_MODER1 ;          /* Set bit    */
-	GPIOC->MODER &= ~ PC9_MODER0 ;          /* Clear bit  */
+	GPIOC->MODER |=   GPIO_MODER_MODE9_1 ;          /* Set bit    */
+	GPIOC->MODER &= ~ GPIO_MODER_MODE9_0 ;  ;          /* Clear bit  */
 
 	/* Step 3: Set Alternate function type as system  (AF = 0000 ) for pins PA8 and PC9 */
     // Pin PA8
-   GPIOA->AFR[1] &= ~( PA8_AFR8_3 | PA8_AFR8_2 | PA8_AFR8_1 | PA8_AFR8_0 );
+   GPIOA->AFR[1] &= ~(GPIO_AFRH_AFSEL8_3  | GPIO_AFRH_AFSEL8_2  | GPIO_AFRH_AFSEL8_1  | GPIO_AFRH_AFSEL8_0 );
 
    // Pin PC9
-   GPIOC->AFR[1] &= ~ ( PC9_AFR9_3 | PC9_AFR9_2 | PC9_AFR9_1 | PC9_AFR9_0 );
+   GPIOC->AFR[1] &= ~ (GPIO_AFRH_AFSEL9_3  | GPIO_AFRH_AFSEL9_2  | GPIO_AFRH_AFSEL9_1  | GPIO_AFRH_AFSEL9_0 );
 
    /* Step 4: Set GPIOA and GPIOC pins PA8 and PC9 in push-pull mode */
 
    /* GPIO port output type register (GPIOx_OTYPER)
-  	* PA8 and PC9 in push-pull mode
+  	* PA8 and PC9 in push-pull mode, clear bit
   	* Reference Manual, RM0433 Rev 8, Page 541
   	*/
-   GPIOA->OTYPER &= ~ PA8_OTYPER;
-   GPIOC->OTYPER &= ~ PC9_OTYPER;
+   GPIOA->OTYPER &= ~ GPIO_OTYPER_OT8;
+   GPIOC->OTYPER &= ~ GPIO_OTYPER_OT9;
 
    /* Step 5: Set GPIOA and GPIOC pins PA8 and PC9 as ultra-high speed
     * GPIO port output speed register (GPIOx_OSPEEDR)
     * PC9 in fast speed mode
     * Reference Manual, RM0433 Rev 8, Page 540, Page
   	*/
-   GPIOC->OSPEEDR |= PC9_OSPEEDR_1  | PC9_OSPEEDR_0 ;
-   GPIOA->OSPEEDR |= PA8_OSPEEDR_1  | PA8_OSPEEDR_0 ;
+   GPIOC->OSPEEDR |= GPIO_OSPEEDR_OSPEED9_1  |  GPIO_OSPEEDR_OSPEED9_0;
+   GPIOA->OSPEEDR |= GPIO_OSPEEDR_OSPEED8_1  |  GPIO_OSPEEDR_OSPEED8_0;
 }
 
 static void MCO_Select_Set(void)
@@ -227,7 +130,7 @@ static void MCO_Select_Set(void)
 	 *  011: PLL1 clock selected (pll1_q_ck)
 	 *  100: HSI48 clock selected (hsi48_ck)
 	 **************************************************************/
-	 RCC->CFGR &= ~ (MCO1_2 | MCO1_1 | MCO1_0 )  ; // MCO1: HSI clock selected
+	 RCC->CFGR &= ~ (RCC_CFGR_MCO1_2| RCC_CFGR_MCO1_1 | RCC_CFGR_MCO1_0 )  ; // MCO1: HSI clock selected
 
 	/****************************************************************
 	 * 000: System clock selected (sys_ck) (default after reset)
@@ -238,9 +141,9 @@ static void MCO_Select_Set(void)
 	 * 101:LSI clock selected (lsi_ck)
 	 * *************************************************************/
 
-	 RCC->CFGR &= ~ MCO2_2            ; // MCO2 :  011: PLL1 clock
-	 RCC->CFGR |=   MCO2_1            ;
-	 RCC->CFGR |=   MCO2_0            ;
+	 RCC->CFGR &= ~ RCC_CFGR_MCO2_2   ; // MCO2 :  011: PLL1 clock
+	 RCC->CFGR |=   RCC_CFGR_MCO2_1   ;
+	 RCC->CFGR |=   RCC_CFGR_MCO2_0   ;
 
 	 /****************************************************
 	  * MCO1 prescaler, RM0433 Rev 8, Page 391
@@ -253,8 +156,8 @@ static void MCO_Select_Set(void)
 	  * 1111: division by 15
 	  ***************************************************/
 
-	  // No division or prescaler disabled.
-	  RCC->CFGR &= ( MCO1_PRE_3 | MCO1_PRE_2 | MCO1_PRE_1 | MCO1_PRE_0 );
+	  // MCO1: No division or prescaler disabled.
+	  RCC->CFGR &= ( RCC_CFGR_MCO1PRE_3 | RCC_CFGR_MCO1PRE_2 | RCC_CFGR_MCO1PRE_1 | RCC_CFGR_MCO1PRE_0);
 
 	  /****************************************************
 	  * MCO2 prescaler, RM0433 Rev 8, Page 390
@@ -267,10 +170,10 @@ static void MCO_Select_Set(void)
 	  * 1111: division by 15
 	  ***************************************************/
 
-	  RCC->CFGR &= ~ MCO2_PRE_3       ;  // Division by 5 = 0 1 0 1
-	  RCC->CFGR |=   MCO2_PRE_2       ;
-	  RCC->CFGR &= ~ MCO2_PRE_1       ;
-	  RCC->CFGR |=   MCO2_PRE_0       ;
+	  RCC->CFGR &= ~ RCC_CFGR_MCO2PRE_3       ;  // Division by 5 = 0 1 0 1
+	  RCC->CFGR |=   RCC_CFGR_MCO2PRE_2       ;
+	  RCC->CFGR &= ~ RCC_CFGR_MCO2PRE_1       ;
+	  RCC->CFGR |=   RCC_CFGR_MCO2PRE_0       ;
 }
 
 static void SystemClock_Config(void)
@@ -332,11 +235,10 @@ static void SystemClock_Config(void)
      * Register only has 1 bit, ODEN
      * */
 
-    SYSCFG->PWRCR |=  SYSCFG_PWRCR_ODEN ;
+   SYSCFG->PWRCR |=  SYSCFG_PWRCR_ODEN ;
 
    // Wait  for VOSRDY to be set (VOS to be ready)
    while(! (PWR->D3CR & PWR_D3CR_VOSRDY) ) {}
-
 
    /* Step 7: Enable HSE clock   */
    RCC->CR |= RCC_CR_HSEON;
@@ -345,12 +247,10 @@ static void SystemClock_Config(void)
    while(! (RCC->CR & RCC_CR_HSERDY) );
 
    /* Step 8: Select HSE temporarily using clock configuration register */
-   //RCC->CFGR |= 0x2UL;                  // Swich to HSE temporarly
    RCC->CFGR |= RCC_CFGR_SW_HSE ;
 
    // Wait for HSE clock to be ready
    while(! (RCC->CFGR & RCC_CFGR_SWS_HSE )) {}
-
 
    /* Step 9: Disable HSI, PLL*/
    // Disable HSI
@@ -391,7 +291,7 @@ static void SystemClock_Config(void)
 	*/
 
     // Set division factor to 5
-	RCC -> PLLCKSELR |= RCC_PLLCKSELR_DIVM ; // DIVM1[5:0]
+	RCC -> PLLCKSELR |= RCC_PLLCKSELR_DIV_M1 ; // DIVM1[5:0]
 
 	/* Step 11: Select HSE as source of PLL1 */
 	RCC -> PLLCKSELR |= RCC_PLLCKSELR_PLLSRC_HSE;
@@ -405,13 +305,13 @@ static void SystemClock_Config(void)
 	*/
 
 	// DIVN = 192, DIVP = 2, DIVQ = 2, DIVR = 2.
-	RCC -> PLL1DIVR  |= RCC_PLL1DIVR_DIVN1 ; // DIVN = 192,
-	RCC -> PLL1DIVR  |= RCC_PLL1DIVR_DIVP1 ; // DIVP =   2,
-	RCC -> PLL1DIVR  |= RCC_PLL1DIVR_DIVQ1 ; // DIVQ =   2,
-	RCC -> PLL1DIVR  |= RCC_PLL1DIVR_DIVR1 ; // DIVR =   2,
+	RCC -> PLL1DIVR  |= RCC_PLL1DIVR_DIV_N1 ; // DIVN = 192,
+	RCC -> PLL1DIVR  |= RCC_PLL1DIVR_DIV_P1 ; // DIVP =   2,
+	RCC -> PLL1DIVR  |= RCC_PLL1DIVR_DIV_Q1 ; // DIVQ =   2,
+	RCC -> PLL1DIVR  |= RCC_PLL1DIVR_DIV_R1 ; // DIVR =   2,
 
-    /* Step 13: Disable PLL1 fractional latch
-    *
+       /* Step 13: Disable PLL1 fractional latch
+        *
 	*   Reference Manual =, Page 401 and 402
 	*   In order to latch the FRACN1 value into the Sigma-Delta modulator,
 	*   PLL1FRACEN must be set to ‘0’, then set to ‘1’: the transition 0 to 1
@@ -429,7 +329,7 @@ static void SystemClock_Config(void)
 	*  Reference Manual, Page 401
 	*  This bit must be written before enabling the PLL1.
 	*  00: The PLL1 input (ref1_ck) clock range frequency is between 1 and 2 MHz (default after reset)
-    *  01: The PLL1 input (ref1_ck) clock range frequency is between 2 and 4 MHz
+        *  01: The PLL1 input (ref1_ck) clock range frequency is between 2 and 4 MHz
 	*  10: The PLL1 input (ref1_ck) clock range frequency is between 4 and 8 MHz
 	*  11: The PLL1 input (ref1_ck) clock range frequency is between 8 and 16 MHz
 	*/
@@ -480,7 +380,7 @@ static void SystemClock_Config(void)
 	*/
 
 	// D1 domain AHB prescaler, 1000 for rcc_hclk3 = sys_d1cpre_ck / 2
-	RCC->D1CFGR |=  RCC_D1CFGR_HPRE_8 ;
+	RCC->D1CFGR |=  RCC_D1CFGR_HPRE_DIV_8 ; // Or use RCC_D1CFGR_HPRE_3 from stm32h743xx.h
 
 	//D1 domain Core prescaler, 0xxx for sys_ck not divided. (default after reset)
 	RCC->D1CFGR &= ~ RCC_D1CFGR_D1CPRE_RESET ;
@@ -515,7 +415,7 @@ static void SystemClock_Config(void)
 	// Set D3 domain APB4 prescaler, 100 for rcc_pclk4 = rcc_hclk4 / 2
 	RCC -> D3CFGR |= RCC_D3CFGR_D3PPRE_2 ;
 
-	 /* Step 21: Update of SystemCoreClock and SystemD2Clock
+	 /* Step 21, Optional: Update of SystemCoreClock and SystemD2Clock
 	* SystemCoreClock and SystemD2Clock will be automatically updated
 	* after call of external function SystemCoreClockUpdate(void);
 	* If SystemCoreClockUpdate(void) will not be called, then use
