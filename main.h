@@ -33,6 +33,30 @@ extern "C" {
 
 #include <stdint.h>
 
+/**************************** Macros ************************************/
+#define RCC_PLLCKSELR_DIVM1_CLEAR   ( 0b111111UL << 4U )
+#define RCC_PLLCKSELR_DIV_M1        (    0b000101 << 4 ) // DIVM1[5:0], Page 397
+#define RCC_PLL1DIVR_DIV_N1         (     0xBFU << 0   )
+#define RCC_PLL1DIVR_DIV_P1         (       1U << 9    )
+#define RCC_PLL1DIVR_DIV_Q1         (       1U << 16   )
+#define RCC_PLL1DIVR_DIV_R1         (       1U << 24   )
+#define RCC_D1CFGR_HPRE_DIV_8       (    0x08  << 0    )
+#define RCC_D1CFGR_D1CPRE_RESET     (   0b1111 << 8    )
+
+
+/************************ Function prototypes ***************************/
+static void MCO_Pins_Config(void)    ;
+static void MCO_Select_Set(void)     ;
+static void SystemClock_Config(void) ;
+
+extern void SystemInit(void);              // ST predefined function
+extern void SystemCoreClockUpdate(void);   // ST predefined function
+
+/************************** Global Variables ***************************/
+extern uint32_t SystemD1Clock;
+extern uint32_t SystemD2Clock;
+
+
 
 #ifdef __cplusplus
 }
